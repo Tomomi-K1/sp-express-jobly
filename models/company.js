@@ -1,5 +1,6 @@
 "use strict";
 
+const { query } = require("express");
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
@@ -60,6 +61,44 @@ class Company {
            ORDER BY name`);
     return companiesRes.rows;
   }
+
+  /** Filter companies
+   *this function accepts query object(req.query) such as {name: 'apple', minEmployees: 10, maxEmployees 1000}
+   * returns filtered companies as an arry of objects.
+   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * 
+   * If the minEmployees parameter is greater than the maxEmployees parameter, it will throw error with message to notify user "minEmployees cannot be greater than maxEmployees"
+   * */
+
+  static async filter(query){ 
+    let queryStr = [];
+    let obj = {
+      name :`name ILIKE '%${query.name}%'`,
+      minEmployees: `num_employees >= ${query.minEmployees}`, 
+      maxEmployees:`num_employees <= ${query.maxEmployees}`
+    }
+
+    if(query.minEmployees > query.maxEmployees){
+        throw new BadRequestError('minEmployees cannot be greater than maxEmployees', 400)
+
+    }
+
+    for (let key in query){
+      queryStr.push(obj[key]) 
+    }
+
+    const queryComplete = queryStr.join(' AND ');
+
+    const CompaniesRes = await db.query(
+      `SELECT handle, name, description, 
+      num_employees AS "numEmployees", 
+      logo_url AS "logoUrl"
+      FROM companies ` + `WHERE ${queryComplete}` + ` ORDER BY name`
+     )
+
+     return CompaniesRes.rows;
+  }
+
 
   /** Given a company handle, return data about company.
    *
