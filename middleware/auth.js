@@ -9,7 +9,7 @@ const { UnauthorizedError } = require("../expressError");
 
 /** Middleware: Authenticate user.
  *
- * If a token was provided, verify it, and, if valid, store the token payload
+ * If a token was provided in bearer token, verify it, and, if valid, store the token payload
  * on res.locals (this will include the username and isAdmin field.)
  *
  * It's not an error if no token was provided or if the token is not valid.
@@ -18,7 +18,10 @@ const { UnauthorizedError } = require("../expressError");
 function authenticateJWT(req, res, next) {
   try {
     const authHeader = req.headers && req.headers.authorization;
-    console.log(`req.headers :${req.headers}, req.headers.authorization:${req.headers.authorization}`)
+    // if both req.headers and req.headers.authorization is truthy, it will return the right side of &&.
+    // req.headers.authorization will look like 
+    // "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RhZG1pbiIsImlzQWRtaW4iOnRydWUsImlhdCI6MTY3OTUxMTM3OX0.AwHQniVBeKJ3od_mtPf6zofDzfQVDX8QFjcRkkrJ7VA"
+    console.log(JSON.stringify(req.headers))
     if (authHeader) {
       const token = authHeader.replace(/^[Bb]earer /, "").trim();
       res.locals.user = jwt.verify(token, SECRET_KEY);
