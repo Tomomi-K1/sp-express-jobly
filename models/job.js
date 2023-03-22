@@ -154,7 +154,7 @@ class job {
                                 company_handle AS "companyHandle"`;
     const result = await db.query(querySql, [...values, id]);
     const job = result.rows[0];
-
+    console.log(JSON.stringify(job));
     if (!job) throw new NotFoundError(`No job id: ${id}`);
 
     return job;

@@ -97,7 +97,9 @@ router.patch("/:id", ensureAdminLoggedIn, async function (req, res, next) {
     const validator = jsonschema.validate(req.body, jobUpdateSchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
+      console.log(errs);
       throw new BadRequestError(errs);
+      
     }
 
     const job = await Job.update(req.params.id, req.body);
