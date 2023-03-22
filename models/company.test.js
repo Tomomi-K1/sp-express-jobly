@@ -87,6 +87,34 @@ describe("findAll", function () {
   });
 });
 
+/************************************** filter */
+describe("filter", function () {
+  test("filtering companies", async function () {
+    let companies = await Company.filter({
+      name: 'c',
+      minEmployees: 2
+    });
+    expect(companies).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  });
+});
+
+
+
 /************************************** get */
 
 describe("get", function () {
