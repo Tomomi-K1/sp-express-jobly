@@ -67,30 +67,48 @@ describe("findAll", function () {
 });
 
 // /************************************** filter */
-// describe("filter", function () {
-//   test("filtering companies", async function () {
-//     let companies = await Company.filter({
-//       name: 'c',
-//       minEmployees: 2
-//     });
-//     expect(companies).toEqual([
-//       {
-//         handle: "c2",
-//         name: "C2",
-//         description: "Desc2",
-//         numEmployees: 2,
-//         logoUrl: "http://c2.img",
-//       },
-//       {
-//         handle: "c3",
-//         name: "C3",
-//         description: "Desc3",
-//         numEmployees: 3,
-//         logoUrl: "http://c3.img",
-//       },
-//     ]);
-//   });
-// });
+describe("filter", function () {
+  test("filtering companies without hasEquity query", async function () {
+    let jobs = await Job.filter({
+      title: 'j',
+      minSalary: 20
+    });
+    expect(jobs).toEqual([
+      {
+        id: 2,
+        title: "j2",
+        salary: 20,
+        equity: expect.any(String),
+        companyHandle: 'c2'
+      },
+      {
+        id: 3,
+        title: "j3",
+        salary: 30,
+        equity: expect.any(String),
+        companyHandle: 'c3'
+      },
+    ]);
+  });
+
+  test("filtering companies with hasEquity query", async function () {
+    let jobs = await Job.filter({
+      title: 'j',
+      minSalary: 20,
+      hasEquity: true
+    });
+    expect(jobs).toEqual( [{
+        id: 3,
+        title: "j3",
+        salary: 30,
+        equity: "0.1",
+        companyHandle: 'c3'
+      }]);
+  });
+
+
+
+});
 
 
 

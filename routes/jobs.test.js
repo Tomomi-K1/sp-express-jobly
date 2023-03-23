@@ -107,27 +107,60 @@ describe("GET /jobs", function () {
     expect(resp.statusCode).toEqual(500);
   });
 
-//   test("filter with name", async () => {
-//     const res = await request(app).get('/companies').query({ name: '1' });
-//     expect(res.body.companies[0]).toEqual(expect.objectContaining({handle: "c1"})) 
-//     expect(res.body.companies).toHaveLength(1);
-//   });
+  test("filter with title", async () => {
+    const res = await request(app).get('/jobs').query({ title: 'j1' });
+    expect(res.body.jobs[0]).toEqual(expect.objectContaining({companyHandle: "c1"})) 
+    expect(res.body.jobs).toHaveLength(1);
+  });
 
-//   test("Fails: filter with minEmployees greater than maxEmployees", async () => {
-//     try{
-//       const res = await request(app).get('/companies').query({ min: 3, max: 1 });
-//     } catch (err){
-//       expect(err instanceof BadRequestError).toBeTruthy();
-//     }
-//   });
+  test("filter with salary", async () => {
+      const res = await request(app).get('/jobs').query({minSalary: 20})
+      expect(res.body.jobs).toEqual([
+        {
+          id: 2,
+          title: "j2",
+          salary: 20,
+          equity: expect.any(String),
+          companyHandle: 'c2'
+        },
+        {
+          id: 3,
+          title: "j3",
+          salary: 30,
+          equity: expect.any(String),
+          companyHandle: 'c3'
+        },
+      ]);
 
-//     test("filter with name & minEmployees", async () => {
+  });
+
+    test("filter with minSalary & hasEquity =true", async () => {
    
-//       const res = await request(app).get('/companies').query({ name: 'c', minEmployees: 2 });
-//       expect(res.body.companies).toHaveLength(2);
-//       expect(res.body.companies[0]).not.toEqual(expect.objectContaining({numEmployees: 1,}))
-//       expect(res.body.companies[1]).not.toEqual(expect.objectContaining({numEmployees: 1,}))
-//     });
+      const res = await request(app).get('/jobs').query({ minSalary: 20, hasEquity: true });
+      expect(res.body.jobs[0]).toEqual(expect.objectContaining({id: 3}))
+    });
+
+    test("filter with minSalary & hasEquity =false", async () => {
+   
+      const res = await request(app).get('/jobs').query({ minSalary: 20, hasEquity: false });
+      expect(res.body.jobs).toHaveLength(2);
+      expect(res.body.jobs).toEqual([
+        {
+          id: 2,
+          title: "j2",
+          salary: 20,
+          equity: "0",
+          companyHandle: 'c2'
+        },
+        {
+          id: 3,
+          title: "j3",
+          salary: 30,
+          equity: "0.1",
+          companyHandle: 'c3'
+        },
+      ]);
+    });
 });
 
 // /************************************** GET /jobs/:id */

@@ -81,7 +81,7 @@ async function commonBeforeAll() {
                     company_handle)
   VALUES (1, 'j1', 10, 0, 'c1'),
          (2, 'j2', 20, 0, 'c2'),
-         (3, 'j3', 30, 0, 'c3')`);
+         (3, 'j3', 30, 0.1, 'c3')`);
 
 }
 
