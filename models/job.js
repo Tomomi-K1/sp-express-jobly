@@ -7,7 +7,7 @@ const { sqlForPartialUpdate } = require("../helpers/sql");
 
 /** Related functions for jobs**/
 
-class job {
+class Job {
   /** Create a job (from data), update db, return new job data.
    *
    * data should be { title, salary, equity, companyHandle }
@@ -61,42 +61,57 @@ class job {
     return jobsRes.rows;
   }
 
-  /** Filter jobss
-   *this function accepts query object(req.query) such as {name: 'apple', minEmployees: 10, maxEmployees 1000}
-   * returns filtered companies as an arry of objects.
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+  /** Filter jobs
+   *this function accepts query object(req.query) 
+
+   possible query string items are:
+   *title: 
+        filter by job title. this should be a case-insensitive, matches-any-part-of-string search.
+  *minSalary: 
+        filter to jobs with at least that salary.
+  *hasEquity: 
+        if true, filter to jobs that provide a non-zero amount of equity. If false or not included in the filtering, list all jobs regardless of equity.
+
+   * returns filtered jobs as an arry of objects as below:
+   * [{ id, title, salary, equity, companyHandle }, ...]
    * 
-   * If the minEmployees parameter is greater than the maxEmployees parameter, it will throw error with message to notify user "minEmployees cannot be greater than maxEmployees"
    * */
 
-  // static async filter(query){ 
-  //   let queryStr = [];
-  //   let obj = {
-  //     name :`name ILIKE '%${query.name}%'`,
-  //     minEmployees: `num_employees >= ${query.minEmployees}`, 
-  //     maxEmployees:`num_employees <= ${query.maxEmployees}`
-  //   }
+  static async filter(query){ 
+    let queryStr = [];
+    let obj = {
+      title :`title ILIKE '%${query.title}%'`,
+      minSalary: `salary >= ${query.minSalary}`, 
+      hasEquity: `equity != 0`
+    }
 
-  //   if(query.minEmployees > query.maxEmployees){
-  //       throw new BadRequestError('minEmployees cannot be greater than maxEmployees', 400)
+    // if query.hasEquity is false, then we will delete from query object so that it won't be filtered by equity.
+    if (query.hasEquity ==='false'){
+      delete query.hasEquity
+    }
 
-  //   }
+    // add query string according to the matching key in obj to make query string. 
+    // it will be pushed to queryStr arry
+    for (let key in query){
+      queryStr.push(obj[key]) 
+    }
+    // if queryStr is empty (we are checking this since we delete query.hasEquity if it is false),
+    // we will return all jobs
+    if(queryStr.length ===0){
+        const jobsRes =Job.findAll();
+        return jobsRes;
+    } else {
+      // if queryStr is not empty, we will put element together by AND to make string for SQL query string
+      const queryComplete = queryStr.join(' AND ');
 
-  //   for (let key in query){
-  //     queryStr.push(obj[key]) 
-  //   }
-
-  //   const queryComplete = queryStr.join(' AND ');
-
-  //   const CompaniesRes = await db.query(
-  //     `SELECT handle, name, description, 
-  //     num_employees AS "numEmployees", 
-  //     logo_url AS "logoUrl"
-  //     FROM companies ` + `WHERE ${queryComplete}` + ` ORDER BY name`
-  //    )
-
-  //    return CompaniesRes.rows;
-  // }
+      const jobsRes = await db.query(
+        `SELECT id, title, salary, 
+        equity, company_handle AS "companyHandle"
+        FROM jobs ` + `WHERE ${queryComplete}` + ` ORDER BY id`
+      )
+      return jobsRes.rows;
+    }  
+  }
 
 
   /** Given a job id, return data about a job.
@@ -154,7 +169,7 @@ class job {
                                 company_handle AS "companyHandle"`;
     const result = await db.query(querySql, [...values, id]);
     const job = result.rows[0];
-    console.log(JSON.stringify(job));
+    // console.log(JSON.stringify(job));
     if (!job) throw new NotFoundError(`No job id: ${id}`);
 
     return job;
@@ -179,4 +194,4 @@ class job {
 }
 
 
-module.exports = job;
+module.exports = Job;

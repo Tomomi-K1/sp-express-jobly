@@ -42,9 +42,12 @@ router.post("/", ensureAdminLoggedIn, async function (req, res, next) {
  *   { jobs: [ { id, title, salary, equity, companyHandle }, ...] }
  *
  * Can filter on provided search filters:
- * - minEmployees
- * - maxEmployees
- * - name (will find case-insensitive, partial matches)
+ * - title (will find case-insensitive, partial matches)
+ * - minSalary
+ * - hasEquity 
+ * 
+   * returns filtered jobs as an arry of objects as below:
+   * [{ id, title, salary, equity, companyHandle }, ...]
  *
  * Authorization required: none
  */
@@ -52,13 +55,13 @@ router.post("/", ensureAdminLoggedIn, async function (req, res, next) {
 router.get("/", async function (req, res, next) {
   try {
     
-    // if(Object.keys(req.query).length ===0){
-      // console.log('no query');
+    if(Object.keys(req.query).length ===0){
+      console.log('no query');
       const jobs = await Job.findAll();
       return res.json({ jobs });
-    // }
-    // const filteredjob = await Job.filter(req.query);
-    // return res.json({jobs: filteredjob})
+    }
+    const filteredjob = await Job.filter(req.query);
+    return res.json({jobs: filteredjob})
     
   } catch (err) {
     return next(err);
