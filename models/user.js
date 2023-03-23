@@ -138,6 +138,8 @@ class User {
         [username],
     );
 
+    if (!userRes.rows[0]) throw new NotFoundError(`No user: ${username}`);
+
     const rows = userRes.rows;
     const jobIds = rows.map(r => r.jobId);
     const userInfo = {
@@ -149,7 +151,7 @@ class User {
         jobs: jobIds
     }
 
-    if (!userRes) throw new NotFoundError(`No user: ${username}`);
+   
 
     return userInfo;
   }
@@ -224,18 +226,21 @@ class User {
 */
 
   static async jobApply(username, jobId){
-    const application = await db.query(`
+    try{
+        const application = await db.query(`
         INSERT INTO applications
                 (username, job_id)
         VALUES  ($1, $2)
         RETURNING username, job_id`,
-        [username, jobId]
-        )
-    if(!application.rows[0]){
-      throw NotFoundError('no such username/jobId');
+        [username, jobId])
+
+      }catch (err){
+        if(err.code ==23503){
+          throw new BadRequestError('username/jobId should already exist on users/jobs table')
+        }
+      }
+
     }
   }
-
-}
 
 module.exports = User;

@@ -134,13 +134,14 @@ describe("findAll", function () {
 describe("get", function () {
   test("works", async function () {
     let user = await User.get("u1");
-    expect(user).toEqual({
+    expect(user).toEqual(expect.objectContaining({
       username: "u1",
       firstName: "U1F",
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
-    });
+      jobs: expect.any(Array)
+    }));
   });
 
   test("not found if no such user", async function () {
@@ -148,6 +149,7 @@ describe("get", function () {
       await User.get("nope");
       fail();
     } catch (err) {
+      console.log(err);
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
@@ -228,3 +230,34 @@ describe("remove", function () {
     }
   });
 });
+  /********** apply job*
+   * 
+   * accept username, jobId
+   * add username and jobId to applications table  
+  */
+  describe("apply to a job", function () {
+      test("works", async function () {
+      await User.jobApply("u1", 1);
+      const res = await db.query(
+          "SELECT * FROM applications WHERE username='u1'");
+      expect(res.rows[0]).toEqual({
+        username: 'u1',
+        job_id :1,
+      });
+    });
+  
+    test("not found username/jobId", async function () {
+      try {
+        await User.jobApply("nope", 1);
+        fail();
+      } catch (err) {
+        console.log(err);
+        expect(err instanceof BadRequestError).toBeTruthy();
+      }
+    });
+  });
+
+
+
+
+
