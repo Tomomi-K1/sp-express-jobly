@@ -125,21 +125,33 @@ class User {
 
   static async get(username) {
     const userRes = await db.query(
-          `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           WHERE username = $1`,
+          `SELECT u.username,
+                  u.first_name AS "firstName",
+                  u.last_name AS "lastName",
+                  u.email,
+                  u.is_admin AS "isAdmin",
+                  a.job_id AS "jobId"
+           FROM users AS u
+           LEFT JOIN applications AS a
+                ON u.username = a.username
+           WHERE u.username = $1`,
         [username],
     );
 
-    const user = userRes.rows[0];
+    const rows = userRes.rows;
+    const jobIds = rows.map(r => r.jobId);
+    const userInfo = {
+        username : rows[0].username,
+        firstName: rows[0].firstName,
+        lastName: rows[0].lastName,
+        email: rows[0].email,
+        isAdmin: rows[0].isAdmin,
+        jobs: jobIds
+    }
 
-    if (!user) throw new NotFoundError(`No user: ${username}`);
+    if (!userRes) throw new NotFoundError(`No user: ${username}`);
 
-    return user;
+    return userInfo;
   }
 
   /** Update user data with `data`.
@@ -204,7 +216,26 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
-}
 
+/********** apply job*
+ * 
+ * accept username, jobId
+ * add username and jobId to applications table  
+*/
+
+  static async jobApply(username, jobId){
+    const application = await db.query(`
+        INSERT INTO applications
+                (username, job_id)
+        VALUES  ($1, $2)
+        RETURNING username, job_id`,
+        [username, jobId]
+        )
+    if(!application.rows[0]){
+      throw NotFoundError('no such username/jobId');
+    }
+  }
+
+}
 
 module.exports = User;
