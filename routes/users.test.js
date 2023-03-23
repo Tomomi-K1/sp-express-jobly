@@ -126,6 +126,38 @@ describe("POST /users", function () {
   });
 });
 
+/********************** POST /users/:username/jobs/:id */
+describe("POST /users/:username/jobs/:id", function () {
+  test("works for admin: adding job to other username", async function () {
+    const resp = await request(app)
+        .post("/users/u1/jobs/1")
+        .set("authorization", `Bearer ${u4Token}`);
+    expect(resp.statusCode).toEqual(201);
+    expect(resp.body).toEqual({"applied" : "1"});
+  });
+
+  test("works for non-admin: apply job using own account", async function () {
+    const resp = await request(app)
+        .post("/users/u1/jobs/1")
+        .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(201);
+    expect(resp.body).toEqual({"applied" : "1"});
+  });
+
+  test("unauth for non-admin applying job with other username", async function () {
+    const resp = await request(app)
+        .post("/users/u2/jobs/2")
+        .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("unauth for anon", async function () {
+    const resp = await request(app)
+        .post("/users/u1/jobs/1")
+    expect(resp.statusCode).toEqual(401);
+  });
+});
+
 /************************************** GET /users */
 
 describe("GET /users", function () {
@@ -199,30 +231,32 @@ describe("GET /users/:username", function () {
     const resp = await request(app)
         .get(`/users/u1`)
         .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.body).toEqual({
+    expect(resp.body).toEqual(expect.objectContaining({
       user: {
         username: "u1",
         firstName: "U1F",
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: expect.any(Array)
       },
-    });
+    }));
   });
 
   test("works for admins", async function () {
     const resp = await request(app)
         .get(`/users/u1`)
         .set("authorization", `Bearer ${u4Token}`);
-    expect(resp.body).toEqual({
+    expect(resp.body).toEqual(expect.objectContaining({
       user: {
         username: "u1",
         firstName: "U1F",
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: expect.any(Array)
       },
-    });
+    }));
   });
 
   test("unauth for accessing other users info", async function () {
