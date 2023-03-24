@@ -37,19 +37,11 @@ describe("POST /companies", function () {
         .send(newCompany)
         .set("authorization", `Bearer ${u4Token}`);
     expect(resp.statusCode).toEqual(201);
-    expect(resp.body.company).toEqual(
-      {
-        handle: "new",
-        name: "New",
-        logoUrl: "http://new.img",
-        description: "DescNew",
-        numEmployees: 10,
-      }
-    )
+    expect(resp.body.company).toEqual(newCompany)
 
   });
 
-  test("not ok with non-admin", async function () {
+  test("unauth with non-admin", async function () {
     const resp = await request(app)
         .post("/companies")
         .send(newCompany)
