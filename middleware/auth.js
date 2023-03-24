@@ -53,8 +53,9 @@ function ensureLoggedIn(req, res, next) {
  */
 function ensureAdminLoggedIn(req, res, next) {
   try {
-    if (!res.locals.user) throw new UnauthorizedError();
-    if (!res.locals.user.isAdmin) throw new UnauthorizedError();
+    if (!res.locals.user || !res.locals.user.isAdmin){ 
+      throw new UnauthorizedError();
+    }
     return next();
   } catch (err) {
     return next(err);
@@ -70,8 +71,12 @@ function LoggedInUserIsSameOrAdmin(req, res, next) {
     if (!res.locals.user) throw new UnauthorizedError();
 
     if(!res.locals.user.isAdmin && res.locals.user.username!== req.params.username) throw new UnauthorizedError();
-    
-    return next();
+    // =====sp solution====//
+    // const user = res.locals.user;
+    // if (!(user && (user.isAdmin || user.username === req.params.username))) {
+    //   throw new UnauthorizedError();
+    // }
+      return next();
   } catch (err) {
     return next(err);
   }

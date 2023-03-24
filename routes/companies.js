@@ -11,6 +11,7 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const companySearchSchema = require("../schemas/companySearch.json");
 
 const router = new express.Router();
 
@@ -51,7 +52,16 @@ router.post("/", ensureAdminLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
-  try {
+    const q = req.query;
+    // arrive as strings from querystring, but we want as ints so that we can test against schema we created. Schema's min&maxEmployees value is indicated as int.
+    if (q.minEmployees !== undefined) q.minEmployees = +q.minEmployees;
+    if (q.maxEmployees !== undefined) q.maxEmployees = +q.maxEmployees;
+try {
+    const validator =jsonschema.validate(q, companySearchSchema);
+    if(!validator.valid){
+      const errors = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errors);
+    }
     
     if(Object.keys(req.query).length ===0){
       console.log('no query');
@@ -65,6 +75,14 @@ router.get("/", async function (req, res, next) {
   } catch (err) {
     return next(err);
   }
+//  =========springboard solution==================//
+    // they are passing q as searchFilter on findAll methed.
+    // const companies = await Company.findAll(q);
+    // return res.json({ companies });
+    // } catch (err) {
+    // return next(err);
+    // }
+
 });
 
 /** GET /[handle]  =>  { company }
