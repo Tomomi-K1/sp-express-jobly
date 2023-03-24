@@ -21,7 +21,7 @@ describe("create", function () {
   const newJob = {
     title: "new",
     salary: 100,
-    equity: 0,
+    equity: "0",
     companyHandle: "c1"
   };
 
@@ -35,6 +35,11 @@ describe("create", function () {
            WHERE title = 'new'`);
            console.log(result.rows);
     expect(result.rows[0]).toEqual(expect.objectContaining({title:'new'}));
+    // also I could write like this
+    // expect(job).toEqual({
+    //   ...newJob,
+    //   id: expect.any(Number),
+    // });
   });
 
   test("bad request with dupe", async function () {

@@ -54,7 +54,7 @@ router.post("/", ensureAdminLoggedIn, async function (req, res, next) {
 router.post("/:username/jobs/:id", LoggedInUserIsSameOrAdmin, async function (req, res, next) {
   try {
     const username = req.params.username;
-    const jobId = req.params.id;
+    const jobId = +req.params.id;
     await User.jobApply(username, jobId)
     return res.status(201).json({ applied: jobId });
   } catch (err) {

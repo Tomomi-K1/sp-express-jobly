@@ -132,16 +132,9 @@ class Company {
     const jobsRes = await db.query(`
           SELECT id, title, salary, equity
           FROM jobs
-          WHERE company_handle =$1`, [handle])
-    company.jobs = jobsRes.rows.map(r =>({
-                                          id: r.id,
-                                          title: r.title,
-                                          salary: r.salary,
-                                          equity: r.equity
-                                          }))
-
-
-    
+          WHERE company_handle =$1
+          ORDER BY id` , [handle])
+    company.jobs = jobsRes.rows;    
 
     return company;
   }

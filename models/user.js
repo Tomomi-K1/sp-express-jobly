@@ -150,11 +150,40 @@ class User {
         isAdmin: rows[0].isAdmin,
         jobs: jobIds
     }
-
-   
-
     return userInfo;
+
+    // or we could make separate query to make jobs array to attach to user's info
+    /*
+    static async get(username) {
+    const userRes = await db.query(
+          `SELECT username,
+                  first_name AS "firstName",
+                  last_name AS "lastName",
+                  email,
+                  is_admin AS "isAdmin"
+           FROM users
+           WHERE username = $1`,
+        [username],
+    );
+
+    const user = userRes.rows[0];
+
+    if (!user) throw new NotFoundError(`No user: ${username}`);
+
+    const userApplicationsRes = await db.query(
+          `SELECT a.job_id
+           FROM applications AS a
+           WHERE a.username = $1`, [username]);
+
+    user.applications = userApplicationsRes.rows.map(a => a.job_id);
+    return user;
   }
+    */
+  }
+
+
+
+
 
   /** Update user data with `data`.
    *
@@ -241,6 +270,30 @@ class User {
       }
 
     }
+    /***sp solution*****
+  static async applyToJob(username, jobId) {
+    const preCheck = await db.query(`
+            SELECT id
+            FROM jobs
+            WHERE id =$1`, [jobId]);
+    const job = preCheck.rows[0];
+
+    if(!job) throw new NotFoundError ('No Job: ${jobId});
+
+    const preCheck2 = await db.query(`
+          SELECT username
+          FROM usesrs
+          WHERE username = $1, [username])
+    const user = preCheck2.rows[0]
+    if(!job) throw new NotFoundError ('No Username: ${username});
+
+    await db.query(`
+        INSERT INTO applications
+                (username, job_id)
+        VALUES  ($1, $2)`,
+        [username, jobId])
+  }
+   */   
   }
 
 module.exports = User;

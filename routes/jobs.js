@@ -11,6 +11,7 @@ const Job = require("../models/job");
 
 const jobNewSchema = require("../schemas/jobNew.json");
 const jobUpdateSchema = require("../schemas/jobUpdate.json");
+const jobSearchSchema = require("../schemas/jobSearch.json");
 
 const router = new express.Router();
 
@@ -53,7 +54,19 @@ router.post("/", ensureAdminLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
+  const q = req.query;
+  //arrives as strings from querystring, but we want as int/bool
+  if(q.minSalary !== undefined) q.minSalary = +q.minSalary;
+  // by comparing q.hasEquity against "true", it will return boolean value either false or true. if q.hasEquity's value is "true"(string), then boolean value true will be assigned to q.hasEquity
+  q.hasEquity = q.hasEquity ==="true";
+
   try {
+
+    const validator =jobNewSchema.validate(q, jobSearchSchema);
+    if(!validator.valid){
+      const errors =validator.errors.map(e=>e.stack)
+      throw new BadRequestError(errors);
+    }
     
     if(Object.keys(req.query).length ===0){
       console.log('no query');

@@ -24,7 +24,12 @@ function authenticateJWT(req, res, next) {
     console.log(JSON.stringify(req.headers))
     if (authHeader) {
       const token = authHeader.replace(/^[Bb]earer /, "").trim();
-      res.locals.user = jwt.verify(token, SECRET_KEY);
+      res.locals.user = jwt.verify(token, SECRET_KEY); 
+      // payload is set to be below. it was set inside the helpers/token.js 
+      // let payload = {
+      //       username: user.username,
+      //       isAdmin: user.isAdmin || false,
+      // };
     }
     return next();
   } catch (err) {
